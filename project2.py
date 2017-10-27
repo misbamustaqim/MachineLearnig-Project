@@ -104,8 +104,12 @@ def unicode_csv_reader(utf8_data, dialect=csv.excel, **kwargs):
  testdf = pd.read_csv(utf_8_encoder('New_profile_test.csv'))
 data_FBUsers_test = testdf.loc[:,['userid','gender','age','Status']]
 
+#Getting training and test data
+data_test = data_FBUsers.loc[np.arange(len(data_FBUsers_test)), :]
+data_train = data_FBUsers.loc[np.arange(len(data_FBUsers)), :]
+
 # Splitting the data into training instances and test instances
-#n = 1500
+#n = 900
 #all_Ids = np.arange(len(data_FBUsers))
 #random.shuffle(all_Ids)
 #test_Ids = all_Ids[0:n]
@@ -113,10 +117,8 @@ data_FBUsers_test = testdf.loc[:,['userid','gender','age','Status']]
 #data_test = data_FBUsers.loc[test_Ids, :]
 #data_train = data_FBUsers.loc[train_Ids, :]
 
-#Getting training and test data
-data_test = data_FBUsers.loc[np.arange(len(data_FBUsers_test)), :]
-data_train = data_FBUsers.loc[np.arange(len(data_FBUsers)), :]
 
+actual_gender = dict(zip(data_test['userid'], data_test['gender']))
 # Training a Naive Bayes model for Gender prediction
 count_vect = CountVectorizer()
 X_train = count_vect.fit_transform(data_train['Status'])
@@ -129,6 +131,7 @@ X_test = count_vect.transform(data_test['Status'])
 y_test = data_test['gender']
 y_predicted = clf.predict(X_test)
 
+#===============================================================MISBA============================================================================================
 print("Predicted gender using status")
 
 print("Predicting gender using likes")
@@ -228,7 +231,13 @@ for key, value in userID_to_totalWeight.items():
 
 	if(value == 0):
 		zero_weight = zero_weight + 1
-
+	
+	if(userid in actual_gender):
+		if(actual_gender[userid] == predicted_gender):
+			correct_count+=1
+		else:
+			wrong_count+=1
+		
 print("ZeroWeight: %d" % zero_weight)
 #print("Correct: %d" % correct_count)
 #print("Wrong: %d" % wrong_count)
@@ -253,17 +262,27 @@ count_gender_mismatch = 0
 if not os.path.isdir(output_directory):
     os.mkdir(output_directory)
 
+correct_count = 0
+wrong_count = 0
+i=0
+
 for index, row in data_FBUsers_test.iterrows():
     # Use this when test data contain labels
     #xml = '<user id="{0}" age_group="{1}" gender="{2}" openness="{3}" conscientious="{4}" extrovert="{5}" agreeable="{6}" neurotic="{7}"/>'.format(row['userid'],row['age'],gender,row['ope'],row['con'],row['ext'],row['agr'],row['neu'] )
     #text_file = open(output_directory+"/"+row['userid']+".xml", "w")
 
 	userid = row[0]
-	gender_status = y_predicted[index]
+	gender_status = y_predicted[i]
+	i+=1
 
-	gender_likes = gender_status
-	if(userid in useridToPredictedGender):
-		gender_likes = useridToPredictedGender[userid]
+	weight = userID_to_totalWeight[userid]
+	if(weight > 0):
+		gender_likes = 0.0
+	else:
+		gender_likes = 1.0
+
+	if(weight == 0):
+		gender_likes = gender_status
 
 	if(gender_status == gender_likes):
 		final_gender = gender_status
@@ -272,8 +291,10 @@ for index, row in data_FBUsers_test.iterrows():
 		final_gender = gender_likes
 		count_gender_mismatch = count_gender_mismatch + 1
 
-	#print(row[0])
-	#print(final_gender)
+	#if(actual_gender[userid] == final_gender):
+	#	correct_count+=1
+	#else:
+	#	wrong_count+=1
 
     # Use this when test data doesn't contain labels
 	xml = '<user id="{0}"\nage_group="{1}"\ngender="{2}"\nextrovert="{5}"\nneurotic="{7}"\nagreeable="{6}"\nconscientious="{4}"\nopen="{3}"\n/>'.format(row[0],age_grp,final_gender,ave_ope,ave_con,ave_ext,ave_agr,ave_neu )
@@ -285,5 +306,14 @@ for index, row in data_FBUsers_test.iterrows():
 	text_file.write(xml)
 	text_file.close()
 
-print("Gender match: %d" % count_gender_match)
-print("Gender mismatch: %d" % count_gender_mismatch)
+print("Gender match: %d" % count_gender_match) 
+print("Gender mismatch: %d" % count_gender_mismatch) 
+
+#print("Accuracy after combination: %f" % ((correct_count)/(correct_count+wrong_count)))
+
+
+
+
+
+
+
