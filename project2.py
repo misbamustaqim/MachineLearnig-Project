@@ -1,4 +1,3 @@
-import random
 import numpy as np
 import pandas as pd
 import sys
@@ -6,14 +5,20 @@ import csv
 import os
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.metrics import classification_report
-from sklearn.metrics import accuracy_score
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report
-
 # Take these values from command line
+from personalities import personalities
+
+if sys.argv.__len__() != 3:
+    print("ERROR: please specify test data directory and output directory in command line arguments")
+    exit(-1)
+
 test_data_directory=sys.argv[1]
 output_directory=sys.argv[2]
+
+#creating a directory named output_directory
+if not os.path.isdir(output_directory):
+    os.mkdir(output_directory)
+
 
 # Use actual location of the training data CSV file
 training_data= "/data/training/profile/profile.csv"
@@ -132,9 +137,6 @@ y_test = data_test['gender']
 y_predicted = clf.predict(X_test)
 
 #===============================================================MISBA============================================================================================
-print("Predicted gender using status")
-
-print("Predicting gender using likes")
 
 # Reporting on classification performance of Gender prediction
 #print("Accuracy of Gender prediction: %.2f" % accuracy_score(y_test,y_predicted))
@@ -149,6 +151,10 @@ female_likes = 0
 
 df_likes = pd.read_csv(r'/data/training/relation/relation.csv')
 df_likes_test = pd.read_csv(test_data_directory + '/relation/relation.csv')
+
+userid_to_emotions_dictionary = personalities.run(df,df_likes,testdf,df_likes_test)
+
+print("Predicting gender using likes")
 
 #train data
 for row in df_likes.iterrows():
@@ -258,9 +264,6 @@ count_gender_match = 0
 count_gender_mismatch = 0
 
 # Generating XML files
-#creating a directory named output_directory
-if not os.path.isdir(output_directory):
-    os.mkdir(output_directory)
 
 correct_count = 0
 wrong_count = 0
@@ -295,9 +298,15 @@ for index, row in data_FBUsers_test.iterrows():
 	#	correct_count+=1
 	#else:
 	#	wrong_count+=1
+	emotions_array = userid_to_emotions_dictionary[userid]
+	ope = emotions_array[1]
+	con = emotions_array[2]
+	ext = emotions_array[3]
+	agr = emotions_array[4]
+	neu = emotions_array[5]
 
     # Use this when test data doesn't contain labels
-	xml = '<user id="{0}"\nage_group="{1}"\ngender="{2}"\nextrovert="{5}"\nneurotic="{7}"\nagreeable="{6}"\nconscientious="{4}"\nopen="{3}"\n/>'.format(row[0],age_grp,final_gender,ave_ope,ave_con,ave_ext,ave_agr,ave_neu )
+	xml = '<user id="{0}"\nage_group="{1}"\ngender="{2}"\nextrovert="{5}"\nneurotic="{7}"\nagreeable="{6}"\nconscientious="{4}"\nopen="{3}"\n/>'.format(row[0],age_grp,final_gender,ope,con,ext,agr,neu )
 	#stext_file = open('{0}/{1}.xml'.format(output_directory, row[0]), "w")
 	#xml = '<user id="{0}" age_group="{1}" gender="{2}" openness="{3}" conscientious="{4}" extrovert="{5}" agreeable="{6}" neurotic="{7}"/>'.format(row[0],age_grp,gender,ave_ope,ave_con,ave_ext,ave_agr,ave_neu )
 	text_file = open('{0}/{1}.xml'.format(output_directory, row[0]), "w")
