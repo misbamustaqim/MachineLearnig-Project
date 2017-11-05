@@ -30,8 +30,8 @@ all_Ids = np.arange(len(train_profile_df))
 random.shuffle(all_Ids)
 test_Ids = all_Ids[0:n]
 train_Ids = all_Ids[n:]
-train_profile_df = data_FBUsers_train.loc[test_Ids, :]
-test_profile_df = data_FBUsers_train.loc[train_Ids, :]
+test_profile_df = data_FBUsers_train.loc[test_Ids, :]
+train_profile_df = data_FBUsers_train.loc[train_Ids, :]
 df_likes_test = df_likes
 
 userid_to_emotion_dictionary = personalities.personalities.run(train_profile_df,df_likes,test_profile_df,df_likes_test)
