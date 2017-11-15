@@ -10,7 +10,7 @@ def Get_LikeId_to_age_Dictionary_From_Relation(df_likes, Source_to_age, source, 
             if destination_id not in LikeID_to_Age_dictionary:
                 LikeID_to_Age_dictionary[destination_id] = [0,0,0,0]
             dict_value = LikeID_to_Age_dictionary[destination_id]
-            print(Source_to_age)
+            #print(dict_value)
 
             if(destination_id not in Source_to_age):
                 continue
@@ -23,6 +23,20 @@ def Get_LikeId_to_age_Dictionary_From_Relation(df_likes, Source_to_age, source, 
                 dict_value[2] += 1
             if (Source_to_age[destination_id] >= 50):
                 dict_value[3] += 1
+
+    for key, value in LikeID_to_Age_dictionary.items():
+        age = max(value[0], value[1], value[2], value[3])
+
+        if (age == value[0]):
+            age_grp = "xx_24"
+        if (age == value[1]):
+            age_grp = "25_34"
+        if (age == value[2]):
+            age_grp = "35_49"
+        if (age == value[3]):
+            age_grp = "50_xx"
+
+        LikeID_to_Age_dictionary[key] = age_grp
 
     return LikeID_to_Age_dictionary
 
@@ -53,7 +67,7 @@ def Calculate_Majority_of_age(data_Age):
         age_grp = "35_49"
     elif (max_age == age_grp_50_xx):
         age_grp = "50_xx"
-    return max_age
+    return age_grp
 
 class Age_By_Likes():
     print("Predicting Age from likes!!")
