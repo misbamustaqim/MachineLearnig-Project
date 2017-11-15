@@ -52,10 +52,5 @@ for index,row in test_profile_df.iterrows():
     RMSE[3] += err_agr * err_agr
     RMSE[4] += err_neu * err_neu
 
-RMSE[0]/=n
-RMSE[1]/=n
-RMSE[2]/=n
-RMSE[3]/=n
-RMSE[4]/=n
 
 print(np.sqrt(RMSE))
