@@ -6,39 +6,31 @@ def Get_LikeId_to_age_Dictionary_From_Relation(df_likes, Source_to_age, source, 
         if source_id not in Source_to_age:
             continue
         else:
-            Emotion_array = Source_to_age[source_id]
+
             if destination_id not in LikeID_to_Age_dictionary:
-                LikeID_to_Age_dictionary[destination_id] = [0,0,0,0]
+                LikeID_to_Age_dictionary[destination_id] = [0,0.0]
             dict_value = LikeID_to_Age_dictionary[destination_id]
-            #print(dict_value)
 
-            if(destination_id not in Source_to_age):
-                continue
+            if(source == 'userid'):
+                age = Source_to_age[source_id]
+                count = 1
+            else:
+                age = Source_to_age[source_id][1]
+                count = Source_to_age[source_id][0]
 
-            if (Source_to_age[destination_id] >= 00 and Source_to_age[destination_id] < 25):
-                dict_value[0] += 1
-            if (Source_to_age[destination_id] >= 25 and Source_to_age[destination_id] < 35):
-                dict_value[1] += 1
-            if (Source_to_age[destination_id] >= 35 and Source_to_age[destination_id] < 50):
-                dict_value[2] += 1
-            if (Source_to_age[destination_id] >= 50):
-                dict_value[3] += 1
-
-    for key, value in LikeID_to_Age_dictionary.items():
-        age = max(value[0], value[1], value[2], value[3])
-
-        if (age == value[0]):
-            age_grp = "xx_24"
-        if (age == value[1]):
-            age_grp = "25_34"
-        if (age == value[2]):
-            age_grp = "35_49"
-        if (age == value[3]):
-            age_grp = "50_xx"
-
-        LikeID_to_Age_dictionary[key] = age_grp
+            dict_value[0] += count
+            dict_value[1] += age
 
     return LikeID_to_Age_dictionary
+
+    LikeID_to_Age_dictionary_clone = dict()
+
+    for key, value in LikeID_to_Age_dictionary.items():
+
+        #if(source == 'userid' and value[0] > 1):
+            LikeID_to_Age_dictionary_clone[key] = value[1] / value[0]
+
+    return LikeID_to_Age_dictionary_clone
 
 
 def Calculate_Majority_of_age(data_Age):
@@ -69,6 +61,23 @@ def Calculate_Majority_of_age(data_Age):
         age_grp = "50_xx"
     return age_grp
 
+
+def getAgeRange(ageWithCount):
+    actualAge = ""
+    age = ageWithCount[1] / ageWithCount[0]
+
+    if (age >= 00 and age < 25):
+        actualAge = "xx_24"
+    if (age >= 25 and age < 35):
+        actualAge = "25_34"
+    if (age >= 35 and age < 50):
+        actualAge = "35_49"
+    if (age >= 50):
+        actualAge = "50_xx"
+
+    return actualAge
+
+
 class Age_By_Likes():
     print("Predicting Age from likes!!")
 
@@ -80,12 +89,14 @@ class Age_By_Likes():
                 if userid not in test_userid_to_age_Dictionary:
                     print("User has no likes")
                     test_userid_to_age_Dictionary[userid] = mejority_age
+                else:
+                    test_userid_to_age_Dictionary[userid] = getAgeRange(test_userid_to_age_Dictionary[userid])
             return test_userid_to_age_Dictionary
     #------------------------------------------------------------------------------------------------------------------------------------
         data_Age = train_profile_df.loc[:, ['age']]
 
         UserId_To_Age = dict(zip(train_profile_df['userid'], train_profile_df['age']))
-        print(UserId_To_Age)
+        #print(UserId_To_Age)
         LikeId_to_age_Dictionary = Get_LikeId_to_age_Dictionary_From_Relation(df_likes, UserId_To_Age,'userid', 'like_id')
         mejority_age = Calculate_Majority_of_age(data_Age)
         userid_to_age_dictionary = Test_dataset(df_likes_test, LikeId_to_age_Dictionary, mejority_age)
