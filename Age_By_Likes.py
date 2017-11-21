@@ -23,15 +23,6 @@ def Get_LikeId_to_age_Dictionary_From_Relation(df_likes, Source_to_age, source, 
 
     return LikeID_to_Age_dictionary
 
-    LikeID_to_Age_dictionary_clone = dict()
-
-    for key, value in LikeID_to_Age_dictionary.items():
-
-        #if(source == 'userid' and value[0] > 1):
-            LikeID_to_Age_dictionary_clone[key] = value[1] / value[0]
-
-    return LikeID_to_Age_dictionary_clone
-
 
 def Calculate_Majority_of_age(data_Age):
     # Counting age ranges

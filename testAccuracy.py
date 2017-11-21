@@ -5,24 +5,12 @@ import pandas as pd
 import sys
 import personalities
 
-if sys.argv.__len__() != 3:
-    print("ERROR: please specify test data directory and output directory in command line arguments1")
-    exit(-1)
-
-# Take these values from command line
-test_data_directory = sys.argv[1]
-output_directory = sys.argv[2]
-
 # Use actual location of the training data CSV file
 training_data = "/data/training/profile/profile.csv"
 data_FBUsers_train = pd.read_csv(training_data)
 train_profile_df = data_FBUsers_train
 
-test_data = test_data_directory + '/profile/profile.csv'
-test_profile_df = pd.read_csv(test_data)
-
 df_likes = pd.read_csv(r'/data/training/relation/relation.csv')
-df_likes_test = pd.read_csv(test_data_directory + '/relation/relation.csv')
 
 # Splitting the data into training instances and test instances
 n = 900
