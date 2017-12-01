@@ -6,12 +6,13 @@ import numpy as np
 
 # Take these values from command line
 #from Gender_By_Likes import Gender_By_Likes
-from Age_By_Likes import Age_By_Likes
+#from Age_By_Likes import Age_By_Likes
+from Emotions_By_Status import Emotions_By_Status
 from Gender_By_Status import Gender_By_Status
 #from Gender_By_Image import Gender_By_Image
 from Age_By_Status import Age_By_Status
 
-from personalities import personalities
+from personalities_by_Likes import personalities
 
 if sys.argv.__len__() != 3:
     print("ERROR: please specify test data directory and output directory in command line arguments")
@@ -43,21 +44,23 @@ df_likes_test = pd.read_csv(test_data_directory + '/relation/relation.csv')
 #Getting userid to gender dictionary predicted from user images
 #userId_to_GenderByImage = Gender_By_Image.run(testdf, test_data_directory)
 
+#Getting userid to emotions dictionary predicted from user status
+userid_to_emotion_dictionary = Emotions_By_Status.run(testdf, test_data_directory)
 
 #Getting userid to gender dictionary predicted from user status
 userId_to_GenderByStatus = Gender_By_Status.run(df, testdf, test_data_directory)
 
 #Getting userid to gender dictionary predicted from user status
-#userId_to_AgeByStatus = Age_By_Status.run(df, testdf, test_data_directory)
+userId_to_AgeByStatus = Age_By_Status.run(df, testdf, test_data_directory)
 
 #Getting userid to age dictionary predicted from user likes
-userId_to_AgeByLikes = Age_By_Likes.run(df,df_likes,testdf,df_likes_test)
+#userId_to_AgeByLikes = Age_By_Likes.run(df,df_likes,testdf,df_likes_test)
 
 #Getting userid to gender dictionary predicted from user likes
 #userId_to_GenderByLikes = Gender_By_Likes.run(df,df_likes,testdf,df_likes_test)
 
 #Getting userid to array of emotions dictionary predicted from user likes
-userid_to_emotions_dictionary = personalities.run(df, df_likes, testdf, df_likes_test)
+#userid_to_emotions_dictionary = personalities.run(df, df_likes, testdf, df_likes_test)
 
 
 print("Saving output")
@@ -76,25 +79,33 @@ for row in testdf.loc[:, ['userid']].iterrows():
     gender_status = userId_to_GenderByStatus[userid]
 
     #gender_image = userId_to_GenderByImage[userid]
-    #age_status = userId_to_AgeByStatus[userid]
+    age_status = userId_to_AgeByStatus[userid]
+    age_grp = age_status
 
-    age_likes = userId_to_AgeByLikes[userid]
+    #age_likes = userId_to_AgeByLikes[userid]
 
     #gender_likes = userId_to_GenderByLikes[userid]
-    age_grp = age_likes
+    #age_grp = age_likes
 	
      
     final_gender = gender_status
     #final_gender = gender_image
     #final_gender = gender_likes
 	
-   
-    emotions_array = userid_to_emotions_dictionary[userid]
-    ope = emotions_array[1]
-    con = emotions_array[2]
-    ext = emotions_array[3]
-    agr = emotions_array[4]
-    neu = emotions_array[5]
+    #ope,con,ext,agr,neu = (userId_to_EmotionsByStatus[userid])
+    emotions_array = userid_to_emotion_dictionary[userid]
+    ope = emotions_array[0]
+    con = emotions_array[1]
+    ext = emotions_array[2]
+    agr = emotions_array[3]
+    neu = emotions_array[4]
+
+    #emotions_array = userid_to_emotions_dictionary[userid]
+    #ope = emotions_array[1]
+    #con = emotions_array[2]
+    #ext = emotions_array[3]
+    #agr = emotions_array[4]
+    #neu = emotions_array[5]
     # Use this when test data doesn't contain labels
     xml = '<user id="{0}"\nage_group="{1}"\ngender="{2}"\nextrovert="{5}"\nneurotic="{7}"\nagreeable="{6}"\nconscientious="{4}"\nopen="{3}"\n/>'.format(
         userid, age_grp, final_gender, ope, con, ext, agr, neu)

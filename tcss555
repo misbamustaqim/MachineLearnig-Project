@@ -21,4 +21,4 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
-python3.6 "project2.py" $INPUTPATH $OUTPUTPATH
+python3.6 "project3.py" $INPUTPATH $OUTPUTPATH

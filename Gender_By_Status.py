@@ -1,12 +1,14 @@
-import numpy as np
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.metrics import accuracy_score
-import random
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.cross_validation import KFold
-from sklearn import linear_model
 import pandas as pd
+import numpy as np
+import random
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn.metrics import accuracy_score
+from sklearn import linear_model
+from sklearn.model_selection import KFold
+from sklearn.linear_model import SGDClassifier
+from sklearn.linear_model import LinearRegression
+from sklearn import metrics
 
 
 class Gender_By_Status():
@@ -28,64 +30,54 @@ class Gender_By_Status():
             test_profile_df.set_value(index, 'Status', data_status)
             userid_to_txt.close()
 
-        data_FBUsers = train_profile_df.loc[:, ['userid', 'age', 'gender','Status']]
+       ########################### Getting training and test data#######################
 
-        # print(data_FBUsers)
+        data_FBUsers_train = train_profile_df.loc[:, ['userid', 'gender', 'Status']]
+        data_FBUsers_test = test_profile_df.loc[:, ['userid', 'gender', 'Status']]
 
-        data_FBUsers_test = test_profile_df.loc[:, ['userid', 'age', 'gender', 'Status']]
+        ################################################################################
 
-        # Getting training and test data
-        data_test = data_FBUsers.loc[np.arange(len(data_FBUsers_test)), :]
-        data_train = data_FBUsers.loc[np.arange(len(data_FBUsers)), :]
+        test_data = data_FBUsers_test.loc[np.arange(len(data_FBUsers_test)), :]
+        train_data = data_FBUsers_train.loc[np.arange(len(data_FBUsers_train)), :]
 
-        #Splitting the data into training instances and test instances
-        #n = 1500
-        #all_Ids = np.arange(len(data_FBUsers))
-        #random.shuffle(all_Ids)
-        #test_Ids = all_Ids[0:n]
-        #train_Ids = all_Ids[n:]
-        #data_test = data_FBUsers.loc[test_Ids, :]
-        #data_train = data_FBUsers.loc[train_Ids, :]
-        count_vect = TfidfVectorizer(stop_words='english',ngram_range=(1,3))
+        ##################################################################################
+        
+        text_feature = ['Status']
 
-        actual_gender = dict(zip(data_test['userid'], data_test['gender']))
-        total = 0
-        numFolds = 10
-        kf = KFold(len(data_train), numFolds, shuffle=True,random_state=True)
-        for train_indices, test_indices in kf:
-            #X_train = data_FBUsers.loc[train_indices, :]; y_train = data_FBUsers.loc[train_indices]
-            #X_test = data_FBUsers.loc[test_indices, :]; y_test = data_FBUsers.loc[test_indices]
-            X_train = count_vect.fit_transform(data_train['Status'])
-            y_train = data_train['gender']
-            clf = MultinomialNB()
-            #clf.fit(X_train, data_train['age_grp'])
-            clf.fit(X_train, y_train)
-            X_test = count_vect.transform(data_test['Status'])
-            y_test = data_test['gender']
-        # Testing the Naive Bayes model for Gender prediction
-            y_predicted = clf.predict(X_test)
-            total += accuracy_score(y_test, y_predicted)
-        #X_test = count_vect.transform(data_train['Status'])
-        #y_test = data_train['age_grp']
-        #y_predicted = clf.predict(X_train)
-        accuracy = total / numFolds
-        #print("Accuracy_of_Gender: %.2f" % accuracy)
-        """
-        # Training a Naive Bayes model for Gender prediction
-        count_vect = CountVectorizer()
-        X_train = count_vect.fit_transform(data_train['Status'])
-        y_train = data_train['gender']
-        clf = MultinomialNB()
-        clf.fit(X_train, data_train['gender'])
+        X_gender = train_data[text_feature]
+        Y_gender = train_data.gender
 
-        # Testing the Naive Bayes model for Gender prediction
-        X_test = count_vect.transform(data_test['Status'])
-        y_test = data_test['gender']
-        y_predicted = clf.predict(X_test)
-	"""
+
+        SGDModel_gender = SGDClassifier(shuffle = True)
+        count_vect=CountVectorizer()
+        Tf_Idf_Transformer = TfidfTransformer()
+        accuracy = 0
+        gender_Kfold = KFold(n_splits= 10, shuffle = True)
+        for training_index, test_index in gender_Kfold.split(X_gender, Y_gender) :
+
+           X_train_gender, X_test_gender =  X_gender.loc[training_index,], X_gender.loc[test_index,]
+           Y_train_gender, Y_test_gender =  Y_gender.loc[training_index,], Y_gender.loc[test_index,]
+
+           gender_training_count_vect = count_vect.fit_transform(X_train_gender.Status)
+           gender_training_Tf_Idf_Transformer = Tf_Idf_Transformer.fit_transform(gender_training_count_vect)
+
+           SGDModel_gender.fit(gender_training_Tf_Idf_Transformer,Y_train_gender)
+
+           gender_test_count_vect = count_vect.transform(X_test_gender.Status)
+           gender_test_Tf_Idf_Transformer = Tf_Idf_Transformer.transform(gender_test_count_vect)
+
+           gender_predicted = SGDModel_gender.predict(gender_test_Tf_Idf_Transformer)
+           accuracy+=accuracy_score(Y_test_gender,gender_predicted)
+        gender_test_count_vect = count_vect.transform(test_data.Status)
+        gender_test_Tf_Idf_Transformer = Tf_Idf_Transformer.transform(gender_test_count_vect)
+
+        gender_predicted = SGDModel_gender.predict(gender_test_Tf_Idf_Transformer)
+        y_predicted = np.int_(gender_predicted)
         userId_to_GenderByStatus = dict()
-        for index, row in data_FBUsers_test.iterrows():
-            userid = getattr(row , 'userid')
-            userId_to_GenderByStatus[userid]  = y_predicted[index]
-
+        for index, row in test_data.iterrows():
+           userid = getattr(row , 'userid')
+           #print(userid)
+           #print(y_predicted[index])
+           userId_to_GenderByStatus[userid] = y_predicted[index]
         return userId_to_GenderByStatus
+
