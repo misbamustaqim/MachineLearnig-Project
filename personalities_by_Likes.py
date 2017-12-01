@@ -24,12 +24,12 @@ def Get_LikeId_to_emotion_Dictionary_From_Relation(df_likes, Source_to_emotion, 
             dict_value[3] += Emotion_array[OFFSET+2]
             dict_value[4] += Emotion_array[OFFSET+3]
             dict_value[5] += Emotion_array[OFFSET+4]
-    # for key, value in LikeID_to_Emotion_dictionary.items():
-    #     value[1] /= value[0]
-    #     value[2] /= value[0]
-    #     value[3] /= value[0]
-    #     value[4] /= value[0]
-    #     value[5] /= value[0]
+    for key, value in LikeID_to_Emotion_dictionary.items():
+        value[1] /= value[0]
+        value[2] /= value[0]
+        value[3] /= value[0]
+        value[4] /= value[0]
+        value[5] /= value[0]
     return LikeID_to_Emotion_dictionary
 
 def Calculate_total_Average(data_Personality):
@@ -75,8 +75,8 @@ class personalities():
                 if userid not in test_userid_to_Average_emotion_Dictionary:
                     #print("User has no likes")
                     test_userid_to_Average_emotion_Dictionary[userid] = average_emotions
-                else:
-                    test_userid_to_Average_emotion_Dictionary[userid] = getRange(test_userid_to_Average_emotion_Dictionary[userid])
+                #else:
+                    #test_userid_to_Average_emotion_Dictionary[userid] = getRange(test_userid_to_Average_emotion_Dictionary[userid])
             return test_userid_to_Average_emotion_Dictionary
 
 
